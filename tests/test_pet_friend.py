@@ -1,5 +1,6 @@
 from api import PetFriends
 from settings import *
+import json
 import os
 
 pf = PetFriends()
@@ -33,38 +34,39 @@ def test_successfill_delete_pet():
         _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
 
     pet_id = my_pets['pets'][0]['id']
-    staus, result = pf.delete_pet(auth_key, pet_id)
+    status, result = pf.delete_pet(auth_key, pet_id)
 
     _, my_pets = pf.get_list_of_pets(auth_key, "my_pets")
 
     assert status == 200
-    assert result != ''
     assert pet_id not in my_pets.values()
+    # assert result != ''
 
 
-def test_add_new_pet_with_valid_data(name= 'Гоголь', anymal_type= 'Шобак', age= '3', pet_photo= 'images/IMG_5554.JPG'):
+
+def test_add_new_pet_with_valid_data(name= 'Гоголь', animal_type= 'Шобак', age= '3', pet_photo= 'images/IMG_5554.JPG'):
     pet_photo = os.path.join(os.path.dirname(__file__), pet_photo)
     _, auth_key = pf.get_api_key(valid_email, valid_password)
-    status, result = pf.add_new_pet(auth_key, name, anymal_type, age, pet_photo)
+    status, result = pf.add_new_pet(auth_key, name, animal_type, age, pet_photo)
     assert status == 200
     assert result['name'] == name
 
 def test_add_new_pet_with_invalid_data(name= 'Гоголь', anymal_type= 'Шобак', age= '3', pet_photo= 'images/dog-044.png'):
-    _, auth_key = pf.get_api_key(valid_email, valid_password)
-    status, result = pf.add_new_pet(auth_key, name, anymal_type, age, pet_photo)
+    status, result = pf.add_new_pet(invalid_auth_key, name, anymal_type, age, pet_photo)
     assert status == 403
-    assert name not in result['name']
+    assert type(result) != json
 
 
 
-def test_successful_update_pet(name= 'Хрюндель', anymal_type= 'Шобакинг', age= '5'):
+def test_successful_update_pet(name= 'Хрюндель', animal_type= 'Шобакинг', age= '5'):
     _, auth_key = pf.get_api_key(valid_email, valid_password)
     _, list_of_pets = pf.get_list_of_pets(auth_key, '')
     if len(list_of_pets['pets']) > 0:
-        status, result = pf.update_pet(auth_key, list_of_pets['pets'][0]['id'], 'Гоголь', 'Пёс', '2')
+        old_name = list_of_pets['pets'][0]['name']
+        status, result = pf.update_pet(auth_key, list_of_pets['pets'][0]['id'], name, animal_type, age)
 
         assert status == 200
-        assert result['name'] == name
+        assert result['name'] != old_name
     else:
         assert True
 
@@ -74,25 +76,31 @@ def test_add_new_pet_simple_with_valid_data(name='Гоголь', anymal_type='Ш
     assert status == 200
     assert result['name'] == name
 
-def test_add_new_pet_simple_with_invalid_data(name='Гоголь', anymal_type='Шобак', age='3'):
-    _, auth_key = pf.get_api_key(invalid_email, invalid_password) # proverit'
-    status, result = pf.add_new_pet_simple(auth_key, name, anymal_type, age)
-    assert status == 400
-    assert result['name'] == name
+def test_add_new_pet_simple_with_invalid_data(name=3365654654, anymal_type=True, age='3'):
+    status, result = pf.add_new_pet_simple(invalid_auth_key, name, anymal_type, age)
+    assert status == 403
+    assert type(result) != json
 
-def test_add_photo_of_a_pet_with_valid_data(pet_photo= 'images/dog-044.png'):
+def test_add_photo_of_a_pet_with_valid_data(pet_photo= 'images/IMG_5554.JPG'):
     pet_photo = os.path.join(os.path.dirname(__file__), pet_photo)
     _, auth_key = pf.get_api_key(valid_email, valid_password)
-    status, result = pf.add_photo_of_a_pet(auth_key, name, anymal_type, age, pet_photo)
-    assert status == 200
-    assert result['name'] == name
+    _, list_of_pets = pf.get_list_of_pets(auth_key, '')
+    if len(list_of_pets['pets']) > 0:
 
-def test_add_photo_of_a_pet_with_invalid_data(pet_photo= 'images/dog-044.png'):
+        pet_id = list_of_pets['pets'][0]['id']
+        status, result = pf.add_photo_of_a_pet(auth_key, pet_id, pet_photo)
+        assert status == 200
+        assert pet_id in result['id']
+    else:
+        assert True
+
+def test_add_photo_of_a_pet_with_invalid_data(pet_photo= 'images/dog-044.png',):
     pet_photo = os.path.join(os.path.dirname(__file__), pet_photo)
     _, auth_key = pf.get_api_key(valid_email, valid_password)
-    status, result = pf.add_photo_of_a_pet(auth_key, name, anymal_type, age, pet_photo)
-    assert status == 400
-    assert result['name'] == name
+    pet_id = 'invalid_pet_id'
+    status, result = pf.add_photo_of_a_pet(auth_key, pet_id, pet_photo)
+    assert status != 200
+    assert pet_id not in result
 
 
 

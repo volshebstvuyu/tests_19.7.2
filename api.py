@@ -8,7 +8,7 @@ class PetFriends:
     def __init__(self):
         self.base_url = "https://petfriends.skillfactory.ru/"
 
-    def get_api_key(self, email, password):
+    def get_api_key(self, email, password)-> json:
 
         headers = {
             "email": email,
@@ -24,7 +24,7 @@ class PetFriends:
             result = res.text
         return status, result
 
-    def get_list_of_pets(self, auth_key, filter):
+    def get_list_of_pets(self, auth_key, filter)-> json:
         headers = {'auth_key': auth_key['key']}
         filter = {'filter': filter}
 
@@ -57,7 +57,7 @@ class PetFriends:
             result = res.text
         return status, result
 
-    def delete_pet(self, auth_key: json, pet_id: str):
+    def delete_pet(self, auth_key: json, pet_id: str)-> json:
         headers = {'auth_key': auth_key['key']}
 
         res = requests.delete(self.base_url + 'api/pets/' + pet_id, headers=headers)
@@ -69,7 +69,7 @@ class PetFriends:
             result = res.text
         return status, result
 
-    def update_pet(self, auth_key: json, pet_id: str, name: str, animal_type: str, age: int):
+    def update_pet(self, auth_key: json, pet_id: str, name: str, animal_type: str, age: int)-> json:
         headers = {"auth_key": auth_key['key']}
 
         data = {
@@ -94,7 +94,7 @@ class PetFriends:
             'age': age
         }
 
-        headers = {'auth_key': auth_key['key'], 'Content-Type': data.content_type}
+        headers = {'auth_key': auth_key['key']}
 
 
         res = requests.post(self.base_url + 'api/create_pet_simple', headers=headers, data=data)
@@ -114,7 +114,7 @@ class PetFriends:
 
         headers = {'auth_key': auth_key['key'], 'Content-Type': data.content_type}
 
-        res = requests.post(self.base_url + 'api/pets/set_photo' + pet_id, headers=headers, data=data)
+        res = requests.post(self.base_url + 'api/pets/set_photo/' + pet_id, headers=headers, data=data)
         status = res.status_code
         result = ""
         try:
